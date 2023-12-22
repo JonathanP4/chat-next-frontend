@@ -1,0 +1,9 @@
+.animate-shrink {
+    animation: shrink 3s linear;
+}
+
+@keyframes shrink {
+    to {
+        transform: scaleX(0);
+    }
+}
