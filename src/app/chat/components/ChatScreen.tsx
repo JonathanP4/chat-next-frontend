@@ -33,17 +33,27 @@ export default function ChatScreen({ className, selectedUser }: Props) {
 
     const endRef = useRef<HTMLDivElement>(null);
 
+    const getMessages = async () => {
+        const { data } = await local.post("/messages", selectedUser);
+
+        setMessages(data.messages);
+        setLoading(false);
+    };
+
     // Get messages
     useEffect(() => {
         setLoading(true);
 
-        (async function getMessages() {
-            const { data } = await local.post("/messages", selectedUser);
-
-            setMessages(data.messages);
-            setLoading(false);
-        })();
+        getMessages();
     }, [selectedUser]);
+
+    useEffect(() => {
+        socket.on("message-deleted", () => getMessages());
+
+        return () => {
+            socket.off("message-deleted");
+        };
+    }, []);
 
     useEffect(() => {
         setTimeout(
@@ -138,9 +148,6 @@ export default function ChatScreen({ className, selectedUser }: Props) {
                         className="emoji-picker cursor-pointer bg-primary p-2 material-symbols-outlined rounded-md px-4"
                     >
                         mood
-                    </span>
-                    <span className="cursor-pointer material-symbols-outlined">
-                        add_circle
                     </span>
                     <form
                         noValidate
