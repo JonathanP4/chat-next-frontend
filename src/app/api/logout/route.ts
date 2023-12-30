@@ -16,7 +16,7 @@ export async function POST(req: Request) {
         {},
         {
             headers: {
-                Authorization: `Bearer ${token.value}xyz`,
+                Authorization: `Bearer ${token.value}`,
             },
         }
     );
