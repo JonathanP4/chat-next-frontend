@@ -22,7 +22,7 @@ export default function Nav() {
     const router = useRouter();
 
     useEffect(() => {
-        (async function getProfile() {
+        async function getProfile() {
             const userId = sessionStorage.getItem("userId");
 
             if (!userId) return;
@@ -30,8 +30,9 @@ export default function Nav() {
             const { data } = await local.get(`/${userId}`);
 
             setUser(data.user);
-        })();
-    }, []);
+        }
+        getProfile();
+    }, [isAuth]);
 
     async function logoutHandler() {
         const { data } = await local.post("/logout");
