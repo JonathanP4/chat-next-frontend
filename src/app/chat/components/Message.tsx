@@ -98,7 +98,7 @@ export default function Message({ message }: Props) {
                     } grid gap-1 p-2 rounded-sm min-w-[5rem] w-fit relative`}
                 >
                     {hasImgLink && (
-                        <div>
+                        <div className="bg-primary rounded-md p-2">
                             <img
                                 className="cursor-pointer"
                                 onClick={imgClickHanlder}
