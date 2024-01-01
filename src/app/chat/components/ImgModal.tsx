@@ -1,7 +1,5 @@
 "use client";
 
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import React, { SetStateAction, useState } from "react";
 
 type Props = {
@@ -16,9 +14,9 @@ type Props = {
 export function ImgModal({ state, imgSrc, alt }: Props) {
     const { showImg, setShowImg } = state;
 
-    const clickHandler = async () => {
+    function clickHandler() {
         setShowImg(false);
-    };
+    }
 
     return (
         <>

@@ -1,6 +1,6 @@
 "use client";
 
-import { MouseEvent, useEffect, useRef, useState } from "react";
+import { MouseEvent, useContext, useEffect, useState } from "react";
 import { getTime } from "@/util/get-time";
 import { createPortal } from "react-dom";
 import { LinkWarning } from "./LinkWarning";
@@ -8,12 +8,11 @@ import { local } from "@/util/axios";
 import { v4 as uuid } from "uuid";
 import { ImgModal } from "./ImgModal";
 
-import "material-symbols";
 import { MessageOptions } from "./MessageOptions";
+import { SelectedUserContext } from "../screen/ChatScreen";
 
 type Props = {
     message: Message;
-    selectedUser: UserData;
 };
 
 const linkRegex = new RegExp(
@@ -21,17 +20,17 @@ const linkRegex = new RegExp(
 );
 const imgLinkRegex = new RegExp(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/);
 
-export default function Message({ message, selectedUser }: Props) {
+export default function Message({ message }: Props) {
     const [isCurrentUser, setIsCurrentUser] = useState<boolean>();
     const [showWarning, setShowWarning] = useState(false);
     const [showImg, setShowImg] = useState(false);
 
-    const ulRef = useRef<HTMLUListElement>(null);
+    const selectedUser = useContext(SelectedUserContext);
 
     const hasLink = message.content.match(imgLinkRegex);
     const hasImgLink = message.content.match(imgLinkRegex);
 
-    const linkClickHandler = async (e: MouseEvent<HTMLAnchorElement>) => {
+    async function linkClickHandler(e: MouseEvent<HTMLAnchorElement>) {
         e.preventDefault();
 
         const { data } = await local.post(
@@ -44,26 +43,24 @@ export default function Message({ message, selectedUser }: Props) {
         }
 
         window.open(message.content, "_blank");
-    };
+    }
 
-    const imgClickHanlder = async () => {
+    async function imgClickHanlder() {
         setShowImg(true);
-    };
+    }
 
-    const optionClickHanlder = () => {
-        if (!ulRef.current) return;
+    function scrollToRepliedMessage() {
+        if (message.replyTo) {
+            const msg = document.getElementById(message.replyTo?.messageId);
 
-        document.querySelectorAll(".msg-options").forEach((el) => {
-            if (el.getAttribute("data-id") !== ulRef.current?.dataset.id) {
-                el.classList.add("hidden");
+            if (msg) {
+                msg.scrollIntoView({ behavior: "smooth" });
             }
-        });
-
-        ulRef.current.classList.toggle("hidden");
-    };
+        }
+    }
 
     useEffect(() => {
-        setIsCurrentUser(selectedUser._id !== message.from);
+        if (selectedUser) setIsCurrentUser(selectedUser._id !== message.from);
     }, [selectedUser]);
 
     return (
@@ -93,11 +90,12 @@ export default function Message({ message, selectedUser }: Props) {
             )}
             {typeof isCurrentUser === "boolean" && (
                 <div
+                    id={message._id}
                     className={`${
-                        isCurrentUser
-                            ? "justify-self-end bg-primary"
-                            : "bg-secondary"
-                    } grid gap-1 p-2 rounded-sm min-w-[5rem] w-fit`}
+                        isCurrentUser ? "justify-self-end text-right" : ""
+                    } ${
+                        message.replyTo && "mt-6"
+                    } grid gap-1 p-2 rounded-sm min-w-[5rem] w-fit relative`}
                 >
                     {hasImgLink && (
                         <div>
@@ -116,42 +114,53 @@ export default function Message({ message, selectedUser }: Props) {
                             </span>
                         </div>
                     )}
-                    {!hasLink && (
-                        <p className="text-base leading-none max-w-[25rem] break-words">
-                            {message.content.split(" ").map((str) => {
-                                if (str.match(linkRegex))
-                                    return (
-                                        <a
-                                            key={uuid()}
-                                            target="_blank"
-                                            onClick={linkClickHandler}
-                                            className="underline transition-colors text-blue-400 hover:text-blue-500"
-                                            href={str}
-                                        >
-                                            {str}
-                                        </a>
-                                    );
-                                else return ` ${str} `;
-                            })}
+                    {message.replyTo && (
+                        <p
+                            onClick={scrollToRepliedMessage}
+                            className={`${
+                                isCurrentUser && "ml-auto"
+                            } text-xs border border-primary py-1 px-2 rounded-md cursor-pointer w-fit max-w-[20ch] overflow-hidden text-ellipsis whitespace-nowrap text-white/70`}
+                        >
+                            {message.replyTo.content}
                         </p>
                     )}
+                    <div
+                        className={`p-2 rounded-md max-w-fit ${
+                            isCurrentUser
+                                ? "bg-primary justify-self-end"
+                                : "bg-secondary"
+                        }`}
+                    >
+                        {!hasLink && (
+                            <p className="text-base leading-none max-w-[25rem] break-words">
+                                {message.content.split(" ").map((str) => {
+                                    if (str.match(linkRegex))
+                                        return (
+                                            <a
+                                                key={uuid()}
+                                                target="_blank"
+                                                onClick={linkClickHandler}
+                                                className="underline transition-colors text-blue-400 hover:text-blue-500"
+                                                href={str}
+                                            >
+                                                {str}
+                                            </a>
+                                        );
+                                    else return ` ${str} `;
+                                })}
+                            </p>
+                        )}
 
-                    <div className="flex justify-between items-center mt-1 relative">
-                        <span
-                            onClick={optionClickHanlder}
-                            style={{
-                                lineHeight: 0,
-                                opacity: 0.6,
-                                fontSize: "20px",
-                            }}
-                            className="material-symbols-outlined cursor-pointer"
-                        >
-                            more_horiz
-                        </span>
-                        <span className="text-xs text-white/60 leading-none">
-                            {getTime(message.createdAt)}
-                        </span>
-                        <MessageOptions id={message._id} ulRef={ulRef} />
+                        <div className="flex justify-between items-center mt-2 relative gap-4">
+                            <MessageOptions
+                                message={message}
+                                isCurrentUser={isCurrentUser}
+                            />
+
+                            <span className="text-xs text-white/60 leading-none">
+                                {getTime(message.createdAt)}
+                            </span>
+                        </div>
                     </div>
                 </div>
             )}

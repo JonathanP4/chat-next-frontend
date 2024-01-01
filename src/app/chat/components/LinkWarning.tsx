@@ -18,17 +18,17 @@ export function LinkWarning({ state, link }: Props) {
     const { showWarning, setShowWarning } = state;
     const [isChecked, setIsChecked] = useState(false);
 
-    const clickHandler = async () => {
+    async function clickHandler() {
         setShowWarning(false);
 
         if (!isChecked) return;
 
         await local.post("/trust-link", JSON.stringify(link));
-    };
+    }
 
-    const checkboxChangeHandler = (e: CheckedState) => {
+    function checkboxChangeHandler(e: CheckedState) {
         setIsChecked(e.valueOf() as boolean);
-    };
+    }
 
     return (
         <>

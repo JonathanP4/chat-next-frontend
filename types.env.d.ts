@@ -23,9 +23,12 @@ type Errors = {
 type Message = {
     _id: string;
     content: string;
-    fromSelf: boolean;
     from: string;
     to: string;
+    replyTo?: {
+        content: string;
+        messageId: string;
+    };
     createdAt: string;
     updatedAt: string;
     __v: number;

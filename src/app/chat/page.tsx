@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import ChatScreen from "./components/ChatScreen";
+import { Suspense, useEffect, useState } from "react";
+import ChatScreen from "./screen/ChatScreen";
 import Contact from "./components/Contact";
 import { socket } from "@/util/socket";
 import { useRouter } from "next/navigation";
 import { local } from "@/util/axios";
+import Loading from "./loading";
 
 export default function page() {
     const [selectedUser, setSelectedUser] = useState<any>();
@@ -50,24 +51,26 @@ export default function page() {
     }, []);
 
     return (
-        <main className="grid grid-cols-[minmax(290px,30%),1fr]">
-            {error && (
-                <pre className="text-lg text-destructive m-8">{error}</pre>
-            )}
-            <ul className="h-[var(--screen)] overflow-y-auto grid content-start">
-                {contacts &&
-                    !error &&
-                    contacts.map((contact) => (
-                        <Contact
-                            key={contact._id}
-                            contact={contact}
-                            setUser={setSelectedUser}
-                        />
-                    ))}
-            </ul>
-            {!error && selectedUser && (
-                <ChatScreen selectedUser={selectedUser} />
-            )}
-        </main>
+        <Suspense fallback={<Loading />}>
+            <main className="grid grid-cols-[minmax(290px,30%),1fr]">
+                {error && (
+                    <pre className="text-lg text-destructive m-8">{error}</pre>
+                )}
+                <ul className="h-[var(--screen)] overflow-y-auto grid content-start">
+                    {contacts &&
+                        !error &&
+                        contacts.map((contact) => (
+                            <Contact
+                                key={contact._id}
+                                contact={contact}
+                                setUser={setSelectedUser}
+                            />
+                        ))}
+                </ul>
+                {!error && selectedUser && (
+                    <ChatScreen selectedUser={selectedUser} />
+                )}
+            </main>
+        </Suspense>
     );
 }

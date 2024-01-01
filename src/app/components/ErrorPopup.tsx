@@ -15,10 +15,10 @@ export function ErrorPopup({ error, setError }: Props) {
         setVisible(true);
     }, [error]);
 
-    const animationEndHandler = () => {
+    function animationEndHandler() {
         setError("");
         setVisible(false);
-    };
+    }
 
     return (
         <div

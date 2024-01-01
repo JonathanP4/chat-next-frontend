@@ -1,13 +1,6 @@
 "use client";
 
-import {
-    Dispatch,
-    SetStateAction,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { getTime } from "@/util/get-time";
 import { local } from "@/util/axios";
 import { socket } from "@/util/socket";
@@ -47,12 +40,12 @@ export default function Contact({ className, contact, setUser }: Props) {
         });
     }, []);
 
-    const clickHanlder = async () => {
+    async function clickHanlder() {
         if (!userIdRef.current) return;
 
         const { data } = await local.get(`/${userIdRef.current.textContent}`);
         setUser(data.user);
-    };
+    }
 
     return (
         <li>

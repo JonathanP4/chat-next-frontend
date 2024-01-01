@@ -21,27 +21,6 @@ export default function Nav() {
     const pathName = usePathname();
     const router = useRouter();
 
-    const logoutHandler = async () => {
-        const { data } = await local.post("/logout");
-
-        if (data.status >= 400) {
-            return setError(data.message);
-        }
-
-        setError("");
-        router.push("/");
-    };
-
-    useEffect(() => {
-        (async function () {
-            const { data } = await local.get("/token");
-
-            sessionStorage.setItem("userId", data.userId);
-
-            setIsAuth(data.isAuth);
-        })();
-    }, [pathName]);
-
     useEffect(() => {
         (async function getProfile() {
             const userId = sessionStorage.getItem("userId");
@@ -53,6 +32,27 @@ export default function Nav() {
             setUser(data.user);
         })();
     }, []);
+
+    async function logoutHandler() {
+        const { data } = await local.post("/logout");
+
+        if (data.status >= 400) {
+            return setError(data.message);
+        }
+
+        setError("");
+        router.push("/");
+    }
+
+    useEffect(() => {
+        (async function () {
+            const { data } = await local.get("/token");
+
+            sessionStorage.setItem("userId", data.userId);
+
+            setIsAuth(data.isAuth);
+        })();
+    }, [pathName]);
 
     return (
         <>
@@ -89,7 +89,10 @@ export default function Nav() {
                             <Link href="/profile">
                                 <img
                                     className="rounded-full"
-                                    src={user?.image}
+                                    src={
+                                        user?.image ||
+                                        "https://st3.depositphotos.com/6672868/13701/v/450/depositphotos_137014128-stock-illustration-user-profile-icon.jpg"
+                                    }
                                     alt="profile picture"
                                     width={50}
                                     height={50}
