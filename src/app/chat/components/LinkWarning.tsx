@@ -27,6 +27,7 @@ export function LinkWarning({ state, link }: Props) {
     }
 
     function checkboxChangeHandler(e: CheckedState) {
+        console.log(link);
         setIsChecked(e.valueOf() as boolean);
     }
 

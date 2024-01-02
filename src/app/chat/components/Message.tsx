@@ -18,7 +18,9 @@ type Props = {
 const linkRegex = new RegExp(
     /https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)/
 );
-const imgLinkRegex = new RegExp(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/);
+const imgLinkRegex = new RegExp(
+    /(http(s?):)([\/|.|\w|\s|-])*\.(?:jpg|gif|png)/
+);
 
 export default function Message({ message }: Props) {
     const [isCurrentUser, setIsCurrentUser] = useState<boolean>();
@@ -27,7 +29,7 @@ export default function Message({ message }: Props) {
 
     const selectedUser = useContext(SelectedUserContext);
 
-    const hasLink = message.content.match(imgLinkRegex);
+    const hasLink = message.content.match(linkRegex);
     const hasImgLink = message.content.match(imgLinkRegex);
 
     async function linkClickHandler(e: MouseEvent<HTMLAnchorElement>) {
@@ -65,12 +67,12 @@ export default function Message({ message }: Props) {
 
     return (
         <>
-            {showWarning && (
+            {hasLink && showWarning && (
                 <>
                     {createPortal(
                         <LinkWarning
                             state={{ setShowWarning, showWarning }}
-                            link={""}
+                            link={hasLink[0]}
                         />,
                         document.querySelector("#modals")!
                     )}
@@ -131,8 +133,12 @@ export default function Message({ message }: Props) {
                                 : "bg-secondary"
                         }`}
                     >
-                        {!hasLink && (
-                            <p className="text-base leading-none max-w-[25rem] break-words">
+                        {hasLink && !hasImgLink && (
+                            <p
+                                className={`text-base leading-none max-w-[25rem] ${
+                                    isCurrentUser && "text-left"
+                                } break-words `}
+                            >
                                 {message.content.split(" ").map((str) => {
                                     if (str.match(linkRegex))
                                         return (
@@ -148,6 +154,16 @@ export default function Message({ message }: Props) {
                                         );
                                     else return ` ${str} `;
                                 })}
+                            </p>
+                        )}
+
+                        {!hasImgLink && !hasLink && (
+                            <p
+                                className={`text-base leading-none max-w-[25rem] ${
+                                    isCurrentUser && "text-left"
+                                } break-words `}
+                            >
+                                {message.content}
                             </p>
                         )}
 
